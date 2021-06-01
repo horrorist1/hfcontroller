@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
+from abc import ABC, abstractmethod
 import logging
 from datetime import datetime, timedelta
 from signal import signal, SIGINT
 from suntime import Sun, SunTimeException
 from timeloop import Timeloop
 import time
+from typing import List
 
 
 def handler(signal_received, frame):
@@ -20,17 +22,35 @@ sun = None
 tl = Timeloop()
 
 
-class Clock:
-    clock = None
+class Ticker(ABC):
+    @abstractmethod
+    def tick(self, stime: datetime):
+        pass
+
+
+class Clock(ABC):
+    _clock = None
+    _tickers: List[Ticker] = []
+
+    def attach(self, ticker: Ticker) -> None:
+        self._tickers.append(ticker)
+
+    def detach(self, ticker: Ticker) -> None:
+        self._tickers.remove(ticker)
+
+    def notify(self) -> None:
+        for ticker in self._tickers:
+            ticker.tick(self.time)
 
     def __init__(self, timestep):
         self.time = datetime.now()
-        self.clock = self
+        self._clock = self
 
         @tl.job(interval=timedelta(seconds=timestep))
         def tick():
             self.time += timedelta(minutes=1)
             logging.info(f'time={self.time}')
+            self.notify()
 
 
 class Human:
@@ -40,20 +60,37 @@ class Human:
 
 class HFController:
     log_file = None
+    light_sensor = None
 
-    class LightSensor:
-        pass
+    class LightSensor(Ticker):
+
+        def __init__(self):
+            clock.attach(self)
+
+        def on_light(self):
+            pass
+
+        def on_dark(self):
+            pass
+
+        def tick(self, stime: datetime) -> None:
+            pass
 
     class TempSensor:
         pass
 
     class PresenceSensor:
-        pass
 
-    class OffButton:
-        pass
+        def on_presence(self):
+            pass
+
+    class TeachButton:
+
+        def on_press(self):
+            pass
 
     def __init__(self, has_window=True):
+        light_sensor = self.LightSensor()
         pass
 
     def start(self):
