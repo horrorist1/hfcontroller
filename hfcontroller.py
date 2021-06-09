@@ -3,6 +3,8 @@
 import sensors
 import logging
 
+from event import EventData
+
 
 class HFController:
     light_sensor = None
@@ -28,7 +30,7 @@ class HFController:
             self.light_sensor.attach(self)
         pass
 
-    def update(self, data):
-        if type(data) is bool:
-            self.logger.info(f' light is {data}')
+    def update(self, event: EventData):
+        if type(event) is bool:
+            self.logger.info(f' light is {event}')
 

@@ -6,8 +6,9 @@ import logging
 from suntime import Sun, SunTimeException
 import time
 from typing import List
+from tzlocal import get_localzone
 
-from event import Emitter, Observer
+from event import Emitter, Observer, EventData
 
 env = None
 
@@ -16,19 +17,19 @@ class World:
     class Clock(Emitter):
         def __init__(self, timestep):
             super().__init__()
-            self.time = datetime.now(timezone.utc)
+            self.time = datetime.now(tz=get_localzone())
 
         def tick(self):
             self.time += timedelta(minutes=1)
             self.notify(self.time)
 
     class Sun(Emitter, Observer):
-        latitude = 51.21
-        longitude = 21.01
+        latitude = 59.92107162856273
+        longitude = 30.343245379259553
         sun = Sun(latitude, longitude)
 
         def _sun_is_up(self, stime: datetime):
-            return self.sun.get_sunrise_time(stime) < stime < self.sun.get_sunset_time(stime)
+            return self.sun.get_local_sunrise_time(stime) < stime < self.sun.get_local_sunset_time(stime)
 
         def __init__(self, clock):
             super().__init__()
@@ -37,10 +38,11 @@ class World:
             clock.attach(self)
             pass
 
-        def update(self, stime: datetime):
-            up = self._sun_is_up(stime)
+        def update(self, data: EventData):
+            up = self._sun_is_up(data.data)
             if up != self.up:
-                self.logger.debug(f'The sun is {up=}')
+                ct = env.clock.time
+                self.logger.info(f'{ct.year}.{ct.month}.{ct.day} {ct.hour}:{ct.minute}: The sun is {up}')
                 self.up = up
                 self.notify(up)
 

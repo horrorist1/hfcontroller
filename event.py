@@ -4,9 +4,15 @@ from abc import ABC, abstractmethod
 from typing import List
 
 
+class EventData:
+    def __init__(self, name: str, data: object):
+        self.name = name
+        self.data = data
+
+
 class Observer(ABC):
     @abstractmethod
-    def update(self, data):
+    def update(self, event: EventData):
         pass
 
 
@@ -22,4 +28,4 @@ class Emitter:
 
     def notify(self, data) -> None:
         for observer in self._observers:
-            observer.update(data)
+            observer.update(EventData(self.__class__.__name__, data))
