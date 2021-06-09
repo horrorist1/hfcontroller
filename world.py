@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 
-from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
-from suntime import Sun, SunTimeException
-import time
-from typing import List
-from tzlocal import get_localzone
+from suntime import Sun
+import pytz
 
 from event import Emitter, Observer, EventData
 
 env = None
+
+latitude = 59.92107162856273
+longitude = 30.343245379259553
 
 
 class World:
     class Clock(Emitter):
         def __init__(self, timestep):
             super().__init__()
-            self.time = datetime.now(tz=get_localzone())
+            self.time = datetime.now(tz=pytz.timezone('Europe/Moscow'))
 
         def tick(self):
             self.time += timedelta(minutes=1)
             self.notify(self.time)
 
     class Sun(Emitter, Observer):
-        latitude = 59.92107162856273
-        longitude = 30.343245379259553
+
         sun = Sun(latitude, longitude)
 
         def _sun_is_up(self, stime: datetime):
@@ -42,7 +41,7 @@ class World:
             up = self._sun_is_up(data.data)
             if up != self.up:
                 ct = env.clock.time
-                self.logger.info(f'{ct.year}.{ct.month}.{ct.day} {ct.hour}:{ct.minute}: The sun is {up}')
+                self.logger.debug(f'{ct.year}.{ct.month}.{ct.day} {ct.hour}:{ct.minute}: The sun is {up}')
                 self.up = up
                 self.notify(up)
 

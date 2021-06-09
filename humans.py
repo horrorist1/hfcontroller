@@ -29,8 +29,10 @@ class Pedant(Emitter, Observer):
         self.logger = logging.getLogger(__class__.__name__)
         world.env.clock.attach(self)
         self.day = world.env.clock.time.weekday()
+        self.day_flipped = False
         self.triggered_events = list()
         self.triggered_events.append(Alarm(8, 0, 20, 'Wakeup'))
+        self.triggered_events.append(Alarm(22, 30, 120, 'Sleep'))
 
     def update(self, event: EventData):
         super().update(event)
@@ -39,11 +41,16 @@ class Pedant(Emitter, Observer):
             if ct >= alarm.time and not alarm.triggered:
                 self.logger.info(f'{ct.hour}:{ct.minute}: {self.__class__.__name__} {alarm.name}')
                 alarm.triggered = True
-        if event.data.weekday() != self.day:
-            self.day = event.data.weekday()
+        if self.day != world.env.clock.time.weekday():
+            self.day_flipped = True
+            self.logger.debug('-------------day switch!')
+            self.day = world.env.clock.time.weekday()
+        if self.day_flipped and all(alarm.triggered for alarm in self.triggered_events):
+            self.day_flipped = False
             self.rearm_alarms()
 
     def rearm_alarms(self):
+        self.logger.debug('+++++++++++++rearm timers')
         for alarm in self.triggered_events:
             alarm.rearm()
         pass

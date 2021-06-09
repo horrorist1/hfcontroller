@@ -2,7 +2,7 @@
 
 from datetime import datetime
 import world
-from event import Emitter, Observer
+from event import Emitter, Observer, EventData
 import logging
 
 
@@ -13,9 +13,10 @@ class LightSensor(Emitter, Observer):
         self.logger = logging.getLogger(__class__.__name__)
         pass
 
-    def update(self, up):
-        self.logger.debug(f' {world.env.clock.time}The sun is up: {up}')
-        self.notify(up)
+    def update(self, event: EventData):
+        ct = world.env.clock.time
+        self.logger.info(f'{ct.hour}:{ct.minute}: {self.__class__.__name__} The sun is up: {event.data}')
+        self.notify(event.data)
         pass
 
 

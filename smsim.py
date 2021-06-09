@@ -13,11 +13,14 @@ import world
 controller = None
 
 
-def main(timestep, has_window, logfile):
+def main(timestep, has_window, logfile, debug):
+    logging_level = logging.INFO
+    if debug:
+        logging_level = logging.DEBUG
     if logfile is not None:
-        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+        logging.basicConfig(stream=sys.stdout, level=logging_level)
     else:
-        logging.basicConfig(filename=logfile, filemode='w', level=logging.INFO)
+        logging.basicConfig(filename=logfile, filemode='w', level=logging_level)
     world.env = world.World(timestep=timestep)
     global controller
     controller = HFController(has_window)
@@ -31,8 +34,10 @@ if __name__ == "__main__":
     parser.add_argument("-w", "--window", help="The ambient light falls illuminates the controller",
                         action='store_true', dest='window')
     parser.add_argument("-l", "--logfile", help="Output log file name", default=sys.stdout)
+    parser.add_argument("-d", "--debug", help="Debug output enabled",
+                        action='store_true', dest='debug')
     args = parser.parse_args()
-    main(timedelta(microseconds=args.timestep), args.window, args.logfile)
+    main(timedelta(microseconds=args.timestep), args.window, args.logfile, args.debug)
 
     print('Running. Press CTRL-C to exit.')
     while True:
