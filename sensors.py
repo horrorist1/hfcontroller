@@ -15,7 +15,7 @@ class LightSensor(Emitter, Observer):
 
     def update(self, event: EventData):
         ct = world.env.clock.time
-        self.logger.info(f'{ct.hour}:{ct.minute}: {self.__class__.__name__} The sun is up: {event.data}')
+        self.logger.info(f'{ct}: {self.__class__.__name__} The sun is up: {event.data}')
         self.notify(event.data)
         pass
 

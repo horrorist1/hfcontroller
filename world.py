@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 from suntime import Sun
 import pytz
@@ -15,16 +15,17 @@ longitude = 30.343245379259553
 
 class World:
     class Clock(Emitter):
+        timezone = pytz.timezone('Europe/Moscow')
+
         def __init__(self, timestep):
             super().__init__()
-            self.time = datetime.now(tz=pytz.timezone('Europe/Moscow'))
+            self.time = datetime.combine(date.today(), datetime.min.time(), tzinfo=World.Clock.timezone)
 
         def tick(self):
             self.time += timedelta(minutes=1)
             self.notify(self.time)
 
     class Sun(Emitter, Observer):
-
         sun = Sun(latitude, longitude)
 
         def _sun_is_up(self, stime: datetime):
