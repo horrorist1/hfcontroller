@@ -23,8 +23,8 @@ def main(timestep, has_window, logfile, debug):
         logging.basicConfig(filename=logfile, filemode='w', level=logging_level)
     world.env = world.World(timestep=timestep)
     global controller
-    controller = HFController(has_window)
     human = humans.Pedant()
+    controller = HFController(human, has_window)
 
 
 if __name__ == "__main__":

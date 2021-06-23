@@ -161,20 +161,32 @@ class Pedant(Emitter, Observer):
         self.state = ['workday', 'sleep']
         self.transit()
 
+
+    @staticmethod
+    def _is_in_bath(state):
+        in_bath_states = ('biobreak', 'nightpee', 'shower')
+        return in_bath_states.count(state) != 0
+
     def transit(self):
         work_state = self._get_work_state()
+        was_in_bath = Pedant._is_in_bath(self.state[1])
         if work_state != self.state[0]:
             self.state[0] = work_state
-            self.logger.info(f'{world.env.clock.time}: {self.state}')
+            self.logger.debug(f'{world.env.clock.time}: {self.state}')
             for alarm in self.states[self.state[0]][self.state[1]]:
                 alarm['condition'].rearm()
 
         for transition in self.states[work_state][self.state[1]]:
             if transition['condition'].check():
                 self.state[1] = transition['to']
-                self.logger.info(f'{world.env.clock.time}: {self.state}')
+                self.logger.debug(f'{world.env.clock.time}: {self.state}')
                 for alarm in self.states[self.state[0]][self.state[1]]:
                     alarm['condition'].rearm()
+
+        if not was_in_bath and Pedant._is_in_bath(self.state[1]):
+            self.enter_bath()
+        elif was_in_bath and not Pedant._is_in_bath(self.state[1]):
+            self.leave_bath()
 
     def update(self, event: EventData):
         super().update(event)
@@ -182,7 +194,7 @@ class Pedant(Emitter, Observer):
         self.transit()
 
         if self.day != world.env.clock.time.weekday():
-            self.logger.info('-------------day switch!')
+            self.logger.debug('-------------day switch!')
             self.day = world.env.clock.time.weekday()
 
     def _get_work_state(self):
@@ -190,10 +202,12 @@ class Pedant(Emitter, Observer):
             return 'workday'
         return 'weekend'
 
-    def leave(self):
-        self.logger.debug(f'{world.env.clock.time}: {self.__class__.__name__} Leave')
+    def enter_bath(self):
+        self.logger.debug(f'{world.env.clock.time}: Enter bath')
+        self.notify('enter')
         pass
 
-    def come_back(self):
-        self.logger.debug(f'{world.env.clock.time}: {self.__class__.__name__} Come back')
+    def leave_bath(self):
+        self.logger.debug(f'{world.env.clock.time}: Leave bath')
+        self.notify('leave')
         pass

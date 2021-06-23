@@ -4,6 +4,7 @@ from datetime import datetime
 import world
 from event import Emitter, Observer, EventData
 import logging
+from humans import Pedant
 
 
 class LightSensor(Emitter, Observer):
@@ -21,9 +22,12 @@ class LightSensor(Emitter, Observer):
 
 
 class PresenceSensor(Emitter, Observer):
-    def __init__(self):
+    def __init__(self, human: Pedant):
         super().__init__()
+        human.attach(self)
+        self.logger = logging.getLogger(__class__.__name__)
 
     def update(self, data):
-        pass
+        self.logger.info(f'{world.env.clock.time}: {data.data}')
+
 

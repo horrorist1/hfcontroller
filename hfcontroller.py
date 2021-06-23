@@ -2,13 +2,12 @@
 
 import sensors
 import logging
+from humans import Pedant
 
 from event import EventData
 
 
 class HFController:
-    light_sensor = None
-
     class TempSensor:
         pass
 
@@ -22,13 +21,14 @@ class HFController:
         def on_press(self):
             pass
 
-    def __init__(self, has_window=True):
+    def __init__(self, human: Pedant, has_window=True):
         super().__init__()
         self.logger = logging.getLogger(__class__.__name__)
         if has_window:
             self.light_sensor = sensors.LightSensor()
             self.light_sensor.attach(self)
-        pass
+        self.presence_sensor = sensors.PresenceSensor(human)
+        self.presence_sensor.attach(self)
 
     def update(self, event: EventData):
         if type(event) is bool:
