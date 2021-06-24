@@ -2,6 +2,8 @@
 
 import sensors
 import logging
+
+import world
 from humans import Pedant
 
 from event import EventData
