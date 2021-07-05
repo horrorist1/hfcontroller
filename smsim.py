@@ -22,6 +22,7 @@ def main(timestep, has_window, logfile, debug):
     else:
         logging.basicConfig(filename=logfile, filemode='w', level=logging_level)
     world.env = world.World(timestep=timestep)
+    world.bathroom = world.Bathroom()
     global controller
     human = humans.Pedant()
     controller = HFController(human, has_window)

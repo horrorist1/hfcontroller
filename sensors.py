@@ -29,7 +29,8 @@ class PresenceSensor(Emitter, Observer):
 
     def update(self, data):
         self.logger.info(f'{world.env.clock.time}: {data.data}')
-        self.logger.info(f'temperature is {world.env.weather.temperature}')
+        self.logger.info(f'temperature outdoor {world.env.weather.get_temperature(world.env.clock.time)}')
+        self.logger.info(f'in the bath {world.bathroom.temperature}')
 
 
 

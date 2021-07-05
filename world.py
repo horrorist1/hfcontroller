@@ -59,19 +59,35 @@ class World:
                     timestamp = timestamp.replace(tzinfo=World.Clock.timezone)
                     temperature = float(entry[1])
                     self.data[timestamp] = temperature
-                pass
+                self.min_temp = min([record for record in self.data.values()])
+                self.max_temp = max([record for record in self.data.values()])
 
-        def _get_temperature(self, requested_date: datetime):
+        def get_temperature(self, requested_date: datetime):
+            if requested_date is None:
+                requested_date = world.env.clock.time
             requested_date = requested_date.replace(year=self.weather_year)
             actual_date, temperature = min(self.data.items(), key=lambda x: abs(requested_date - x[0]))
             return temperature
-
-        @property
-        def temperature(self):
-            return self._get_temperature(world.env.clock.time)
 
     def __init__(self, timestep: timedelta):
         self.clock = self.Clock(timestep)
         self.sun = self.Sun(self.clock)
         self.weather = self.Weather()
         pass
+
+
+class Bathroom:
+    def __init__(self):
+        self._min_unheated_temp = 16.0
+        self._max_unheated_temp = 28.0
+        w = world.env.weather
+        medium_temp = (w.max_temp - w.min_temp) / 2 + w.min_temp
+        medium_unheated = (self._max_unheated_temp - self._min_unheated_temp) / 2 + self._min_unheated_temp
+        self._K = (self._max_unheated_temp - self._min_unheated_temp) / (w.max_temp - w.min_temp)
+        self._shift = medium_unheated - (medium_temp * self._K)
+        pass
+
+    @property
+    def temperature(self):
+        outdoor_temperature_shifted = world.env.weather.get_temperature(world.env.clock.time - timedelta(hours=6))
+        return round(outdoor_temperature_shifted * self._K + self._shift, 1)
